@@ -1,4 +1,5 @@
-flask
+flask==3.0.0
+gunicorn==21.2.0
 ultralytics==8.0.196
 opencv-python-headless==4.8.1.78
-numpy
+numpy==1.24.3
