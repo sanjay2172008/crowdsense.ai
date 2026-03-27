@@ -11,7 +11,12 @@
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-// LED indicator
+// Traffic Signal LEDs
+#define LED_RED    25   // GPIO 25 - Red LED (High crowd)
+#define LED_YELLOW 26   // GPIO 26 - Yellow LED (Medium crowd)
+#define LED_GREEN  27   // GPIO 27 - Green LED (Low crowd)
+
+// Status LED
 #define LED_STATUS 2
 
 // Data variables
@@ -28,9 +33,14 @@ const unsigned long timeout = 5000;  // 5 second timeout if no data
 void setup() {
   Serial.begin(115200);
   
-  // Initialize LED
+  // Initialize LED pins
   pinMode(LED_STATUS, OUTPUT);
-  digitalWrite(LED_STATUS, LOW);
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_YELLOW, OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
+  
+  // All LEDs off initially
+  allLEDsOff();
   
   // Initialize OLED
   Wire.begin(OLED_SDA, OLED_SCL);
@@ -52,18 +62,50 @@ void loop() {
       parseData(data);
       dataReceived = true;
       lastUpdate = millis();
-      digitalWrite(LED_STATUS, HIGH);  // LED on = data received
+      digitalWrite(LED_STATUS, HIGH);
+      updateTrafficLight();
     }
   }
   
   // Check timeout
   if (dataReceived && (millis() - lastUpdate > timeout)) {
     displayTimeout();
+    allLEDsOff();
     dataReceived = false;
   }
   
   // Always update display with current data
   displayData();
+}
+
+void allLEDsOff() {
+  digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_YELLOW, LOW);
+  digitalWrite(LED_GREEN, LOW);
+}
+
+void updateTrafficLight() {
+  allLEDsOff();
+  
+  if (crowdStatus == "High") {
+    // Red LED ON - Crowded/Dangerous
+    digitalWrite(LED_RED, HIGH);
+    Serial.println("Traffic Light: RED - High Crowd");
+  } 
+  else if (crowdStatus == "Medium") {
+    // Yellow LED ON - Moderate crowd
+    digitalWrite(LED_YELLOW, HIGH);
+    Serial.println("Traffic Light: YELLOW - Medium Crowd");
+  } 
+  else if (crowdStatus == "Low") {
+    // Green LED ON - Low crowd/Safe
+    digitalWrite(LED_GREEN, HIGH);
+    Serial.println("Traffic Light: GREEN - Low Crowd");
+  }
+  else {
+    // All off - No data
+    allLEDsOff();
+  }
 }
 
 void displayStartup() {
@@ -96,7 +138,6 @@ void displayTimeout() {
 
 void parseData(String data) {
   // Format: "BUS:12B,COUNT:25,STATUS:Medium,DEST:Thiruvanmiyur,ARRIVE:5 mins"
-  // Or any subset of this format
   
   int busIdx = data.indexOf("BUS:");
   int countIdx = data.indexOf("COUNT:");
@@ -175,14 +216,26 @@ void displayData() {
     display.print(crowdStatus);
   }
   
-  // Destination
-  display.setTextColor(SSD1306_WHITE);
+  // Traffic Light Indicator on Display
   display.setTextSize(1);
   display.setCursor(0, 48);
-  display.print("To: ");
-  display.println(destination);
+  display.print("Signal:");
+  display.setCursor(45, 48);
+  if (crowdStatus == "High") {
+    display.setTextColor(SSD1306_WHITE);
+    display.print("[RED]    [ ]    [ ]");
+  } else if (crowdStatus == "Medium") {
+    display.setTextColor(SSD1306_WHITE);
+    display.print("[ ]   [YELLOW] [ ]");
+  } else if (crowdStatus == "Low") {
+    display.setTextColor(SSD1306_WHITE);
+    display.print("[ ]    [ ]   [GREEN]");
+  } else {
+    display.print("[ ]    [ ]    [ ]");
+  }
   
   // Arrival Time
+  display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 56);
   display.print("Next: ");
   display.print(nextArrival);

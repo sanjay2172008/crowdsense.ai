@@ -1,7 +1,9 @@
-# ESP32 + OLED 0.96" Display (USB - No WiFi)
+# ESP32 + OLED 0.96" + Traffic Signal LEDs (USB - No WiFi)
 
 ## Overview
-This setup uses ESP32 connected to PC via USB cable. A Python script on PC fetches data from your deployed app and sends it to ESP32 via serial.
+This setup uses ESP32 connected to PC via USB cable with:
+- **OLED Display** - Shows passenger count, bus info, arrival time
+- **Traffic Signal LEDs** - Red/Yellow/Green to indicate crowd level
 
 ## Hardware Connections
 
@@ -13,11 +15,43 @@ This setup uses ESP32 connected to PC via USB cable. A Python script on PC fetch
 | GPIO 21   | SDA      |
 | GPIO 22   | SCL      |
 
-### Status LED (Optional)
-| ESP32 Pin | LED + 220Ω Resistor |
-|-----------|---------------------|
-| GPIO 2    | LED Anode (+)       |
-| GND       | LED Cathode (-)     |
+### Traffic Signal LEDs
+| ESP32 Pin | LED Color | Purpose |
+|-----------|-----------|---------|
+| GPIO 25   | RED LED   | High crowd - Don't go! |
+| GPIO 26   | YELLOW LED | Medium crowd - Caution |
+| GPIO 27   | GREEN LED | Low crowd - Safe to go |
+
+### Optional: Status LED
+| ESP32 Pin | Component |
+|-----------|-----------|
+| GPIO 2    | Built-in LED (Data indicator) |
+
+### LED Connection (Each LED)
+```
+ESP32 GPIO ────[ 220Ω Resistor ]──── LED Anode (+)
+GND ───────────────────────────────── LED Cathode (-)
+```
+
+### Traffic Light Module (If using module)
+| ESP32 Pin | Module Pin |
+|-----------|------------|
+| GPIO 25   | R (Red)   |
+| GPIO 26   | Y (Yellow)|
+| GPIO 27   | G (Green) |
+| GND       | GND       |
+
+## How It Works
+
+```
+PC (runs Python) ← USB → ESP32 → OLED Display
+                            ↓
+                     Traffic LEDs
+                            ↓
+              [RED] = High crowd (Don't go!)
+              [YELLOW] = Medium crowd (Caution)
+              [GREEN] = Low crowd (Safe to go!)
+```
 
 ## Software Setup
 
@@ -31,14 +65,13 @@ This setup uses ESP32 connected to PC via USB cable. A Python script on PC fetch
 5. Upload code
 
 ### 2. Python - PC Controller
-1. Install Python 3.x
-2. Install required packages:
+1. Install Python dependencies:
    ```
    pip install pyserial requests
    ```
-3. Connect ESP32 to PC via USB
-4. Close Arduino IDE Serial Monitor (important!)
-5. Run the controller:
+2. Connect ESP32 to PC via USB
+3. Close Arduino IDE Serial Monitor
+4. Run the controller:
    ```
    python pc_controller.py
    ```
@@ -46,11 +79,11 @@ This setup uses ESP32 connected to PC via USB cable. A Python script on PC fetch
 ## Usage
 
 ### Step 1: Update Configuration
-Before running, edit `pc_controller.py`:
+Edit `pc_controller.py`:
 ```python
 SERVER_URL = "https://your-app.railway.app"  # Your deployed URL
 SERIAL_PORT = "COM5"  # Your ESP32 port
-QUERY_PARAM = "q=12b"  # Bus/Hospital/Temple query
+QUERY_PARAM = "q=12b"  # Bus query
 ```
 
 ### Step 2: Run
@@ -59,17 +92,28 @@ cd esp32_oled_usb/esp32_display
 python pc_controller.py
 ```
 
-### Step 3: View on OLED
-The OLED will display:
+## Display & LED Behavior
+
+| Crowd Status | Traffic LED | OLED Badge | Meaning |
+|--------------|-------------|------------|---------|
+| HIGH         | 🔴 RED ON   | HIGH       | Crowded - Avoid |
+| MEDIUM       | 🟡 YELLOW ON | MEDIUM     | Moderate - Go if needed |
+| LOW          | 🟢 GREEN ON | LOW        | Safe - Good to go |
+
+## LED Indicator Summary
+- **LED ON = Data received from PC**
+- **Traffic Light:**
+  - 🔴 **Red** = High crowd (crowded)
+  - 🟡 **Yellow** = Medium crowd (moderate)
+  - 🟢 **Green** = Low crowd (safe)
+
+## OLED Display Shows
 - **Bus Number** (e.g., Bus 12B)
-- **Passenger Count** (big number)
+- **Passenger Count** (large number)
 - **Crowd Status** (HIGH/MEDIUM/LOW)
+- **Traffic Signal Indicator** (on screen)
 - **Destination**
 - **Next Arrival Time**
-
-## LED Indicator
-- **LED ON** = Data received from PC
-- **LED OFF** = No data / timeout
 
 ## Queries
 Change `QUERY_PARAM` to display different data:
@@ -80,41 +124,19 @@ Change `QUERY_PARAM` to display different data:
 | Bus 5 | `q=5` |
 | Apollo Hospital | `q=apollo` |
 | Meenakshi Temple | `q=meenakshi` |
-| Fortis Hospital | `q=fortis` |
 
 ## Troubleshooting
 
 ### "Serial port not found"
-1. Check USB cable is data cable (not charging only)
-2. Check ESP32 port in Device Manager (Windows)
+1. Check USB cable is data cable
+2. Check ESP32 port in Device Manager
 3. Make sure Arduino IDE Serial Monitor is CLOSED
 
-### "Network error"
-1. Check your deployed app URL is correct
-2. Make sure app is deployed and running
-3. Test URL in browser first
+### LEDs not working
+1. Check LED polarity (long leg = +)
+2. Use 220Ω resistors for each LED
+3. Check connections to GPIO 25, 26, 27
 
 ### OLED not showing anything
 1. Check OLED connections (SDA→21, SCL→22)
-2. Check OLED address is 0x3C (some are 0x3D)
-3. Try reversing SDA/SCL wires
-
-## Customization
-
-### Change OLED Address
-If your OLED uses 0x3D, change in code:
-```cpp
-if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3D))  // Change to 0x3D
-```
-
-### Change Pin Numbers
-```cpp
-#define OLED_SDA 21  // Change SDA pin
-#define OLED_SCL 22  // Change SCL pin
-```
-
-### Change Update Interval
-In `pc_controller.py`:
-```python
-UPDATE_INTERVAL = 5  # seconds
-```
+2. Try OLED address 0x3D if 0x3C doesn't work
