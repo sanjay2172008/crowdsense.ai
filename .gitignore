@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+yolov8n.pt
+images/
+*.jpg
+*.jpeg
+*.png
+.env

@@ -1,0 +1,154 @@
+   <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrowdSense AI</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #020617;
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(6,182,212,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.07) 0%, transparent 60%);
+  }
+
+  .logo {
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .logo span:nth-child(1) { color: #06b6d4; }
+  .logo span:nth-child(2) { color: #818cf8; }
+  .logo span:nth-child(3) { color: #f97316; }
+  .logo span:nth-child(4) { color: #22c55e; }
+
+  .subtitle {
+    color: #64748b;
+    font-size: 1rem;
+    margin-bottom: 48px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 680px;
+    max-width: 95vw;
+  }
+
+  .card {
+    position: relative;
+    padding: 32px 28px;
+    background: #0f172a;
+    border-radius: 20px;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.25s ease;
+    overflow: hidden;
+    text-decoration: none;
+    display: block;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    padding: 1.5px;
+    background: var(--glow);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .card:hover::before { opacity: 1; }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px var(--shadow); }
+
+  .card-bus    { --glow: linear-gradient(135deg,#06b6d4,#3b82f6); --shadow: rgba(6,182,212,0.25); }
+  .card-temple { --glow: linear-gradient(135deg,#f97316,#ef4444); --shadow: rgba(249,115,22,0.25); }
+  .card-hosp   { --glow: linear-gradient(135deg,#14b8a6,#06b6d4); --shadow: rgba(20,184,166,0.25); }
+  .card-queue  { --glow: linear-gradient(135deg,#a855f7,#ec4899); --shadow: rgba(168,85,247,0.25); }
+
+  .icon-wrap {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+  }
+  .card-bus    .icon-wrap { background: rgba(6,182,212,0.2); }
+  .card-temple .icon-wrap { background: rgba(249,115,22,0.2); }
+  .card-hosp   .icon-wrap { background: rgba(20,184,166,0.2); }
+  .card-queue  .icon-wrap { background: rgba(168,85,247,0.2); }
+
+  .card h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 6px; }
+  .card p  { font-size: 0.85rem; color: #64748b; }
+
+  .ghost-icon {
+    position: absolute; right: 20px; bottom: 16px;
+    font-size: 3.5rem; opacity: 0.08;
+  }
+
+  .yolo-badge {
+    margin-top: 40px;
+    background: rgba(6,182,212,0.1);
+    border: 1px solid rgba(6,182,212,0.25);
+    border-radius: 30px;
+    padding: 6px 18px;
+    font-size: 0.78rem;
+    color: #06b6d4;
+  }
+</style>
+</head>
+<body>
+
+<div class="logo">
+  <span>Crowd</span><span>Sense</span><span>A</span><span>I</span>
+</div>
+<p class="subtitle">Real-time crowd intelligence for smarter decisions</p>
+
+<div class="grid">
+  <a class="card card-bus" href="/bus">
+    <div class="icon-wrap">🚌</div>
+    <h2>Bus Tracking</h2>
+    <p>Check real-time bus crowd status</p>
+    <span class="ghost-icon">🚌</span>
+  </a>
+
+  <a class="card card-temple" href="/temple">
+    <div class="icon-wrap">🛕</div>
+    <h2>Temple Crowd</h2>
+    <p>Monitor temple visitor levels</p>
+    <span class="ghost-icon">🛕</span>
+  </a>
+
+  <a class="card card-hosp" href="/hospital">
+    <div class="icon-wrap">🏥</div>
+    <h2>Hospital Status</h2>
+    <p>View hospital crowd information</p>
+    <span class="ghost-icon">🏥</span>
+  </a>
+
+  <a class="card card-queue" href="/queue">
+    <div class="icon-wrap">📷</div>
+    <h2>Queue Management</h2>
+    <p>Analyze queue wait times with AI</p>
+    <span class="ghost-icon">📷</span>
+  </a>
+</div>
+
+<div class="yolo-badge">⚡ Powered by YOLOv8 Real-time Detection</div>
+
+</body>
+</html>            
